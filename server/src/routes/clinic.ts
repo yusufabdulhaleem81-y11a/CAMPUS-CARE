@@ -53,7 +53,8 @@ clinicRouter.get('/patients/search', roleRequired('receptionist', 'nurse', 'doct
     const like = `%${q}%`;
     const { data, error } = await from(req, 'patients')
       .select('id, unit_number, full_name, category, university_id, phone, sex, date_of_birth, is_verified')
-      .or(`unit_number.ilike.${like},university_id.ilike.${like},phone.ilike.${like},full_name.ilike.${like}`)
+      // Quote each value: search terms may contain PostgREST delimiters (comma, slash, parenthesis)
+      .or(`unit_number.ilike."${like}",university_id.ilike."${like}",phone.ilike."${like}",full_name.ilike."${like}"`)
       .limit(20);
     if (error) throw error;
     res.json(data);
@@ -248,15 +249,16 @@ clinicRouter.get('/queue', roleRequired('receptionist', 'nurse', 'doctor', 'admi
   }
 });
 
-clinicRouter.post('/queue/:id/:action(call|start|complete|skip|cancel)', roleRequired('receptionist', 'nurse', 'doctor', 'admin', 'super_admin'), async (req, res) => {
+clinicRouter.post('/queue/:id/:action', roleRequired('receptionist', 'nurse', 'doctor', 'admin', 'super_admin'), async (req, res) => {
   try {
+    const action = z.enum(['call', 'start', 'complete', 'skip', 'cancel']).parse(req.params.action);
     const { error } = await rpc(req, 'queue_transition', {
-      p_queue_id: req.params.id, p_action: req.params.action,
+      p_queue_id: req.params.id, p_action: action,
     });
     if (error) throw error;
     res.json({ ok: true });
   } catch (e) {
-    fail(res, e);
+    fail(res, e, e instanceof z.ZodError ? 422 : 400);
   }
 });
 
@@ -538,6 +540,98 @@ clinicRouter.get('/lab/orders/mine', async (req, res) => {
       .order('released_at', { ascending: false });
     if (error) throw error;
     res.json(data);
+  } catch (e) {
+    fail(res, e, 500);
+  }
+});
+
+// ============================================================ PATIENT PORTAL (own data, RLS-checked)
+
+clinicRouter.get('/patients/:id/appointments', async (req, res) => {
+  try {
+    const { data: patient } = await from(req, 'patients').select('id, profile_id').eq('id', req.params.id).single();
+    if (!patient || (req.profile!.role === 'student' && patient.profile_id !== req.userId)) {
+      return res.status(403).json({ error: 'Not your clinic file' });
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    let query = from(req, 'appointments')
+      .select('id, reference, appointment_date, start_time, end_time, service, status, doctor_id')
+      .eq('patient_id', patient.id).order('appointment_date', { ascending: false });
+    if (req.query.upcoming === 'true') {
+      query = query.gte('appointment_date', today).eq('status', 'booked');
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    res.json(data ?? []);
+  } catch (e) {
+    fail(res, e, 500);
+  }
+});
+
+clinicRouter.get('/patients/:id/visits', async (req, res) => {
+  try {
+    const { data: patient } = await from(req, 'patients').select('id, profile_id').eq('id', req.params.id).single();
+    if (!patient || (req.profile!.role === 'student' && patient.profile_id !== req.userId)) {
+      return res.status(403).json({ error: 'Not your clinic file' });
+    }
+    const [encounters, prescriptions, dispensings] = await Promise.all([
+      from(req, 'encounters').select('*').eq('patient_id', patient.id).order('opened_at', { ascending: false }).limit(50),
+      from(req, 'prescriptions').select('*, prescription_items(*)').eq('patient_id', patient.id).order('created_at', { ascending: false }).limit(50),
+      from(req, 'dispensings').select('*, medicines(name), prescription_items(dosage, frequency)').eq('patient_id', patient.id).order('dispensed_at', { ascending: false }).limit(100),
+    ]);
+    res.json({
+      encounters: encounters.data ?? [],
+      prescriptions: prescriptions.data ?? [],
+      dispensings: dispensings.data ?? [],
+    });
+  } catch (e) {
+    fail(res, e, 500);
+  }
+});
+
+clinicRouter.post('/appointments/:id/cancel-own', async (req, res) => {
+  try {
+    const { error } = await rpc(req, 'cancel_appointment', {
+      p_appointment_id: req.params.id, p_reason: 'Cancelled by patient',
+    });
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (e) {
+    fail(res, e);
+  }
+});
+
+// ============================================================ ENCOUNTER WORKSPACE
+
+clinicRouter.get('/encounters/:id', async (req, res) => {
+  try {
+    const { data: encounter, error } = await from(req, 'encounters').select('*').eq('id', req.params.id).single();
+    if (error || !encounter) return res.status(404).json({ error: 'Encounter not found' });
+    const { data: patient, error: patientError } = await from(req, 'patients')
+      .select('id, unit_number, full_name, allergies, chronic_conditions, blood_group, date_of_birth, sex')
+      .eq('id', encounter.patient_id).single();
+    if (patientError) throw patientError;
+
+    const [vitals, nursing, consultation, diagnoses, prescriptions, labOrders] = await Promise.all([
+      from(req, 'vitals').select('*').eq('encounter_id', encounter.id).order('recorded_at', { ascending: false }),
+      from(req, 'nursing_assessments').select('assessment, intervention, escalated_to_doctor, recorded_at')
+        .eq('encounter_id', encounter.id).order('recorded_at', { ascending: false }),
+      from(req, 'consultations').select('presentation, examination, treatment_plan, follow_up_date')
+        .eq('encounter_id', encounter.id).maybeSingle(),
+      from(req, 'diagnoses').select('id, name, code, diagnosed_at').eq('encounter_id', encounter.id).order('diagnosed_at', { ascending: false }),
+      from(req, 'prescriptions').select('id, status, created_at, prescription_items(*)')
+        .eq('encounter_id', encounter.id).order('created_at', { ascending: false }),
+      from(req, 'lab_orders').select('id, status, ordered_at, lab_tests(name, code)')
+        .eq('encounter_id', encounter.id).order('ordered_at', { ascending: false }),
+    ]);
+    res.json({
+      encounter, patient,
+      vitals: vitals.data ?? [], nursing: nursing.data ?? [],
+      consultation: consultation.data ?? null,
+      diagnoses: diagnoses.data ?? [],
+      prescriptions: prescriptions.data ?? [],
+      labOrders: labOrders.data ?? [],
+    });
   } catch (e) {
     fail(res, e, 500);
   }

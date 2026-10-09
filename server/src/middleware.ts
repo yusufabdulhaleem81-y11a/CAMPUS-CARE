@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import { z } from 'zod';
 import { asUser, admin } from './supabase.js';
 
 export interface StaffProfile {
@@ -65,7 +66,15 @@ export function from(req: Request, table: string) {
 }
 
 export function fail(res: Response, e: unknown, status = 400) {
+  if (e instanceof z.ZodError) {
+    return res.status(status).json({ error: e.issues[0]?.message ?? 'Invalid input' });
+  }
+  // PostgrestError and similar plain objects: surface their message, not "[object Object]"
+  if (e && typeof e === 'object') {
+    const obj = e as { message?: string; details?: string; hint?: string; code?: string };
+    const msg = [obj.message, obj.details].filter(Boolean).join(' — ') || 'The request could not be completed';
+    return res.status(status).json({ error: msg });
+  }
   const msg = e instanceof Error ? e.message : String(e);
-  const clean = msg.replace(/\{.*\}/s, '').trim() || 'The request could not be completed';
-  res.status(status).json({ error: clean });
+  res.status(status).json({ error: msg || 'The request could not be completed' });
 }

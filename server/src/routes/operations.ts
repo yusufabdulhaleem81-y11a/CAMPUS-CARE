@@ -172,14 +172,15 @@ operationsRouter.get('/emergency/mine', async (req, res) => {
   res.json(data);
 });
 
-operationsRouter.post('/emergency/:id/:action(respond|handover|close)', STAFF_ROLES, async (req, res) => {
+operationsRouter.post('/emergency/:id/:action', STAFF_ROLES, async (req, res) => {
   try {
+    const action = z.enum(['respond', 'handover', 'close']).parse(req.params.action);
     const body = z.object({
       staff_id: z.string().uuid().optional(),
       triage_notes: z.string().optional(),
     }).parse(req.body ?? {});
     const { error } = await rpc(req, 'update_emergency_case', {
-      p_case_id: req.params.id, p_action: req.params.action,
+      p_case_id: req.params.id, p_action: action,
       p_staff_id: body.staff_id ?? null, p_triage_notes: body.triage_notes ?? null,
     });
     if (error) throw error;
@@ -187,4 +188,14 @@ operationsRouter.post('/emergency/:id/:action(respond|handover|close)', STAFF_RO
   } catch (e) {
     fail(res, e, e instanceof z.ZodError ? 422 : 400);
   }
+});
+
+// Staff directory for roster management (management roles)
+operationsRouter.get('/staff-directory', MGMT, async (_req, res) => {
+  const { data, error } = await admin.from('profiles')
+    .select('id, full_name, role, staff_id')
+    .neq('role', 'student')
+    .order('full_name');
+  if (error) return fail(res, error, 500);
+  res.json(data);
 });

@@ -17,10 +17,12 @@ authRouter.post('/login', async (req, res) => {
   try {
     const body = idPasswordSchema.parse(req.body);
     const cleanId = body.id.trim().toUpperCase();
+    // Quote the value: IDs like "STF/REC/007" contain "/" which is a PostgREST
+    // or-filter delimiter and must not be treated as one.
     const { data: profile, error } = await admin
       .from('profiles')
       .select('id, email, full_name, role, reg_no, staff_id')
-      .or(`reg_no.eq.${cleanId},staff_id.eq.${cleanId}`)
+      .or(`reg_no.eq."${cleanId}",staff_id.eq."${cleanId}"`)
       .maybeSingle();
     if (error) throw error;
     if (!profile?.email) return res.status(401).json({ error: 'ID not recognized. Check with reception.' });
