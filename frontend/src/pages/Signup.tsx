@@ -8,6 +8,7 @@ import { getToken, setSession } from '../lib/api';
 interface SignupResponse {
   session: { access_token: string; refresh_token: string } | null;
   patient: { unit_number: string } | null;
+  profile?: { reg_no?: string } | null;
 }
 
 export default function Signup() {
@@ -15,6 +16,7 @@ export default function Signup() {
   const [form, setForm] = useState({ full_name: '', reg_no: '', email: '', phone: '', department: '', password: '' });
   const [error, setError] = useState<string | null>(null);
   const [unitNumber, setUnitNumber] = useState<string | null>(null);
+  const [loginId, setLoginId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   function set(key: keyof typeof form) {
@@ -28,6 +30,7 @@ export default function Signup() {
       const res = await api<SignupResponse>('/auth/signup', { method: 'POST', body: form });
       if (res.session) setSession(res.session.access_token, res.session.refresh_token);
       setUnitNumber(res.patient?.unit_number ?? null);
+      setLoginId(res.profile?.reg_no ?? form.reg_no.toUpperCase());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
@@ -41,6 +44,9 @@ export default function Signup() {
         <Card className="max-w-md text-center">
           <h1 className="font-display text-xl font-semibold text-navy">Registration complete</h1>
           <p className="mt-3 text-slate-600">Your clinic file has been created.</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Sign in with your Registration No: <span className="font-semibold text-navy">{loginId}</span>
+          </p>
           <div className="my-6 rounded-xl border-2 border-dashed border-primary/40 bg-primary-light/40 p-6">
             <p className="text-sm text-slate-600">Your Clinic Unit Number</p>
             <p className="font-display text-3xl font-bold tracking-wide text-primary-dark">{unitNumber}</p>

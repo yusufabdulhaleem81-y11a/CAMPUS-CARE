@@ -21,12 +21,22 @@ authRouter.post('/login', async (req, res) => {
     const cleanId = body.id.trim().toUpperCase().replace(/\s+/g, '');
     // Quote the value: IDs like "STF/REC/007" contain "/" which is a PostgREST
     // or-filter delimiter and must not be treated as one.
-    const { data: profile, error } = await admin
+    let { data: profile, error } = await admin
       .from('profiles')
       .select('id, email, full_name, role, reg_no, staff_id')
       .or(`reg_no.eq."${cleanId}",staff_id.eq."${cleanId}"`)
       .maybeSingle();
     if (error) throw error;
+    // Users often type their email out of habit; accept a profile email too.
+    if (!profile && cleanId.includes('@')) {
+      const byEmail = await admin
+        .from('profiles')
+        .select('id, email, full_name, role, reg_no, staff_id')
+        .eq('email', cleanId.toLowerCase())
+        .maybeSingle();
+      if (byEmail.error) throw byEmail.error;
+      profile = byEmail.data;
+    }
     if (!profile?.email) return res.status(401).json({ error: 'ID not recognized. Check with reception.' });
 
     const { data, error: signInError } = await anon.auth.signInWithPassword({
@@ -66,7 +76,9 @@ authRouter.post('/signup', async (req, res) => {
       .select('id').eq('reg_no', regNo).maybeSingle();
     if (existing) return res.status(409).json({ error: 'This registration number already has an account' });
 
-    const email = `${regNo.toLowerCase().replace(/[^a-z0-9]+/g, '.')}@${CLINIC_EMAIL_DOMAIN}`;
+    // Use the student's real email as the auth identity so they can also sign in
+    // with it (and receive password-reset mail). Staff accounts keep derived IDs.
+    const email = body.email.toLowerCase();
 
     const { data: created, error: createError } = await admin.auth.admin.createUser({
       email, password: body.password, email_confirm: true,
