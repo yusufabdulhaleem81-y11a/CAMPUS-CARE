@@ -3,6 +3,8 @@
 -- WARNING: demo only — rotate or delete these accounts before production use.
 
 -- ---------- Demo auth accounts (id-first login maps to these synthetic emails) ----------
+-- NOTE: GoTrue requires a matching auth.identities row for every auth.users row,
+-- otherwise password sign-in fails with "Database error querying schema".
 do $$
 declare
   u_admin uuid; u_head uuid; u_doc uuid; u_nurse uuid; u_recep uuid; u_lab uuid; u_pharm uuid; u_student uuid;
@@ -56,6 +58,23 @@ begin
   values ('00000000-0000-0000-0000-000000000000', gen_random_uuid(), 'authenticated', 'authenticated',
     'student@clinic.local', pwd, now(), '{"provider":"email","providers":["email"]}', '{}', now(), now())
   returning id into u_student;
+
+  -- GoTrue expects empty strings, not NULL, in the auth token columns; NULL makes
+  -- every load of these users fail with "Database error loading user" (HTTP 500).
+  update auth.users
+  set confirmation_token = '', recovery_token = '', email_change = '',
+      email_change_token_current = '', email_change_token_new = '',
+      phone_change = '', phone_change_token = '', reauthentication_token = ''
+  where email like '%@clinic.local';
+
+  -- Backfill auth.identities for every demo user created above (required by GoTrue)
+  insert into auth.identities (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+  select id::text, id,
+         jsonb_build_object('sub', id::text, 'email', email, 'email_verified', true),
+         'email', now(), now(), now()
+  from auth.users
+  where email like '%@clinic.local'
+    and not exists (select 1 from auth.identities i where i.user_id = auth.users.id);
 
   insert into public.profiles (id, full_name, role, staff_id, reg_no, email) values
     (u_admin,  'Hauwa Bala',      'admin',       'STF/ADM/001', null, 'admin@clinic.local'),
