@@ -37,15 +37,6 @@ non-identifying rows).
 Run the SQL in `supabase/migrations/` **in order** (0001 → 0004), then
 `supabase/seed.sql`, using the Supabase SQL editor or `psql`:
 
-```bash
-# with psql, using your project's database URL
-psql "$DATABASE_URL" -f supabase/migrations/0001_schema.sql
-psql "$DATABASE_URL" -f supabase/migrations/0002_functions.sql
-psql "$DATABASE_URL" -f supabase/migrations/0003_rls.sql
-psql "$DATABASE_URL" -f supabase/migrations/0004_analytics.sql
-psql "$DATABASE_URL" -f supabase/seed.sql
-```
-
 With the Supabase CLI instead:
 
 ```bash
