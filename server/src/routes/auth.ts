@@ -16,7 +16,9 @@ const idPasswordSchema = z.object({
 authRouter.post('/login', async (req, res) => {
   try {
     const body = idPasswordSchema.parse(req.body);
-    const cleanId = body.id.trim().toUpperCase();
+    // IDs are case/space-insensitive: users type "FCP/CSC/24/1110", "fcp/csc/24/1110"
+    // or "FCP /CSC/24/1110" interchangeably and must all match.
+    const cleanId = body.id.trim().toUpperCase().replace(/\s+/g, '');
     // Quote the value: IDs like "STF/REC/007" contain "/" which is a PostgREST
     // or-filter delimiter and must not be treated as one.
     const { data: profile, error } = await admin
@@ -57,7 +59,7 @@ const selfSignupSchema = z.object({
 authRouter.post('/signup', async (req, res) => {
   try {
     const body = selfSignupSchema.parse(req.body);
-    const regNo = body.reg_no.trim().toUpperCase();
+    const regNo = body.reg_no.trim().toUpperCase().replace(/\s+/g, '');
 
     const { data: existing } = await admin
       .from('profiles')
@@ -128,7 +130,7 @@ const staffSchema = z.object({
 authRouter.post('/staff', authRequired, roleRequired('admin', 'super_admin'), async (req, res) => {
   try {
     const body = staffSchema.parse(req.body);
-    const staffId = body.staff_id.trim().toUpperCase();
+    const staffId = body.staff_id.trim().toUpperCase().replace(/\s+/g, '');
     const { data: existing } = await admin.from('profiles').select('id').eq('staff_id', staffId).maybeSingle();
     if (existing) return res.status(409).json({ error: 'Staff ID already exists' });
 
