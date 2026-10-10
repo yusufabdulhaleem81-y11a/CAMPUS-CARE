@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Card, ErrorMsg, Field, Input } from '../components/ui';
 import { ClinicLogo } from '../components/ClinicLogo';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { useAuth, homeForRole } from '../lib/auth';
 
 export default function Login() {
@@ -36,7 +37,7 @@ export default function Login() {
         <div className="mb-6 flex items-center justify-center gap-3">
           <ClinicLogo size={44} />
 
-          <div>
+          <div className="min-w-0 flex-1">
             <h1 className="font-display text-xl font-bold text-navy">
               Campus Care
             </h1>
@@ -44,6 +45,8 @@ export default function Login() {
               FUD Clinic · Sign in
             </p>
           </div>
+
+          <ThemeToggle />
         </div>
 
         <Card>

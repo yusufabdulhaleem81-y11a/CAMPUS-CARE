@@ -298,7 +298,7 @@ function ConsultForm({ encounterId, initial, diagnoses, locked, onSaved }: {
         <div className="rounded-lg bg-bg p-3">
           <p className="mb-2 text-sm font-semibold text-navy">Diagnoses this visit</p>
           <div className="flex flex-wrap gap-2">
-            {diagnoses.map((d) => <span key={d.id} className="rounded-full bg-white px-3 py-1 text-xs font-medium text-navy border border-line">{d.name}</span>)}
+            {diagnoses.map((d) => <span key={d.id} className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-navy border border-line">{d.name}</span>)}
             {pendingDx.map((d, i) => <span key={`p${i}`} className="rounded-full bg-primary-light px-3 py-1 text-xs font-medium text-primary-dark">{d.name} (new)</span>)}
           </div>
           <div className="mt-3 flex flex-wrap items-end gap-2">

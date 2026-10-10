@@ -76,7 +76,7 @@ export default function Reception() {
                 <Empty title="No patient found."
                   action={<Button size="sm" onClick={() => setShowRegister(true)}>Register new patient</Button>} />
               ) : results.map((p) => (
-                <div key={p.id} className="flex items-center justify-between gap-2 rounded-lg border border-line bg-white px-3 py-2.5">
+                <div key={p.id} className="flex items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3 py-2.5">
                   <div className="min-w-0">
                     <p className="truncate font-medium text-navy">{p.full_name}</p>
                     <p className="text-xs text-slate-500">{p.unit_number} · {p.category.replace('_', ' ')}{p.university_id ? ` · ${p.university_id}` : ''}</p>

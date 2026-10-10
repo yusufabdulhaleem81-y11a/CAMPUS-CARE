@@ -4,6 +4,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth, homeForRole } from '../lib/auth';
 import type { Role } from '../lib/auth';
 import { LogoLockup, ClinicLogo } from './ClinicLogo';
+import { ThemeToggle } from './ThemeToggle';
 
 interface NavItem { to: string; label: string; roles: Role[] }
 
@@ -42,8 +43,11 @@ export function StaffShell({ title, children }: { title: string; children: React
   return (
     <div className="flex min-h-screen">
       {/* Sidebar (desktop) */}
-      <aside className="hidden w-60 shrink-0 flex-col bg-navy p-4 no-print lg:flex">
-        <Link to={homeForRole[profile.role]} className="mb-6"><LogoLockup light /></Link>
+      <aside className="hidden w-60 shrink-0 flex-col bg-sidebar p-4 no-print lg:flex">
+        <div className="mb-6 flex items-center justify-between gap-2">
+          <Link to={homeForRole[profile.role]}><LogoLockup light /></Link>
+          <ThemeToggle onNavy />
+        </div>
         {nav}
         <div className="mt-auto border-t border-white/15 pt-4">
           <p className="text-sm font-medium text-white">{profile.full_name}</p>
@@ -57,14 +61,17 @@ export function StaffShell({ title, children }: { title: string; children: React
       </aside>
 
       {/* Mobile top bar + drawer */}
-      <div className="fixed inset-x-0 top-0 z-40 flex items-center justify-between bg-navy px-4 py-3 no-print lg:hidden">
+      <div className="fixed inset-x-0 top-0 z-40 flex items-center justify-between bg-sidebar px-4 py-3 no-print lg:hidden">
         <LogoLockup light />
-        <button aria-expanded={open} aria-label="Toggle menu" onClick={() => setOpen(!open)}
-          className="rounded-lg border border-white/25 px-3 py-1.5 text-sm text-white">Menu</button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle onNavy />
+          <button aria-expanded={open} aria-label="Toggle menu" onClick={() => setOpen(!open)}
+            className="rounded-lg border border-white/25 px-3 py-1.5 text-sm text-white">Menu</button>
+        </div>
       </div>
       {open && (
         <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={() => setOpen(false)}>
-          <div className="h-full w-64 bg-navy p-4 pt-16" onClick={(e) => e.stopPropagation()}>
+          <div className="h-full w-64 bg-sidebar p-4 pt-16" onClick={(e) => e.stopPropagation()}>
             {nav}
             <button onClick={logout} className="mt-4 w-full rounded-lg border border-white/25 px-3 py-2 text-sm text-white">Sign out</button>
           </div>
@@ -97,16 +104,19 @@ export function PatientShell({ children }: { children: ReactNode }) {
   if (!profile) return null;
   return (
     <div className="min-h-screen pb-20">
-      <header className="sticky top-0 z-40 flex items-center justify-between bg-navy px-4 py-3 no-print">
+      <header className="sticky top-0 z-40 flex items-center justify-between bg-sidebar px-4 py-3 no-print">
         <LogoLockup light />
-        <button onClick={logout} className="rounded-lg border border-white/25 px-3 py-1.5 text-sm text-white">Sign out</button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle onNavy />
+          <button onClick={logout} className="rounded-lg border border-white/25 px-3 py-1.5 text-sm text-white">Sign out</button>
+        </div>
       </header>
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">{children}</main>
       <footer className="pb-20 text-center">
         <p className="text-xs text-slate-400">© 2026 Innovatech Limited. All rights reserved.</p>
       </footer>
       <nav aria-label="Portal navigation"
-        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-white no-print">
+        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-surface no-print">
         {portalNav.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.to === '/portal'}
             className={({ isActive }) =>

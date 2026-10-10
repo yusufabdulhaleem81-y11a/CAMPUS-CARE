@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { HeroSlideshow } from '../components/HeroSlideshow';
 import { LogoLockup } from '../components/ClinicLogo';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { Card } from '../components/ui';
 import { api } from '../lib/api';
 import { useAuth, homeForRole } from '../lib/auth';
@@ -61,6 +62,7 @@ export default function Landing() {
       <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 py-4 sm:px-8">
         <LogoLockup light />
         <nav className="flex items-center gap-3">
+          <ThemeToggle onNavy />
           {profile ? (
             <Link to={homeForRole[profile.role]}
               className="rounded-[10px] bg-primary px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary/30 transition hover:-translate-y-0.5 hover:bg-primary-dark">
@@ -165,7 +167,7 @@ export default function Landing() {
       </section>
 
       {/* ---------- Services ---------- */}
-      <section className="bg-gradient-to-b from-white to-bg py-16">
+      <section className="bg-gradient-to-b from-surface to-bg py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
           <Reveal>
             <h2 className="font-display text-2xl font-semibold text-navy">Clinic services</h2>
@@ -215,7 +217,7 @@ export default function Landing() {
       </section>
 
       {/* ---------- Footer ---------- */}
-      <footer className="bg-navy py-10 text-navy-light">
+      <footer className="bg-sidebar py-10 text-navy-light">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <LogoLockup light />
           <p className="text-sm">

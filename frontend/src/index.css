@@ -11,6 +11,9 @@
   --color-bg: #f7f9f8;
   --color-surface: #ffffff;
   --color-line: #e2e8f0;
+  --color-sidebar: #1e3a5f;
+  --color-ink: #0f172a;
+  --color-primary-text: #0f766e;
   --font-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
   --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --radius-input: 6px;
@@ -21,10 +24,67 @@ html { font-family: var(--font-body); }
 
 body {
   background: var(--color-bg);
-  color: #0f172a;
+  color: var(--color-ink);
   font-size: 16px;
   line-height: 1.5;
 }
+
+/* Dark theme: remaps the tokens above and the Tailwind palette steps that
+   the pages use for text, tints and status pills. Toggled by ThemeProvider. */
+html.dark {
+  --color-bg: #0b1220;
+  --color-surface: #111a2c;
+  --color-line: #24324a;
+  --color-navy: #e2e8f0;
+  --color-navy-light: #a9b8cc;
+  --color-sidebar: #0a1528;
+  --color-ink: #e2e8f0;
+  --color-primary-light: #123b38;
+  --color-primary-text: #5eead4;
+  --color-gold: #e3c27a;
+  --color-gold-tint: #3a2f12;
+
+  --color-slate-50: #0b1220;
+  --color-slate-100: #1e293b;
+  --color-slate-200: #334155;
+  --color-slate-300: #475569;
+  --color-slate-400: #64748b;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #cbd5e1;
+  --color-slate-700: #e2e8f0;
+  --color-slate-800: #f1f5f9;
+  --color-slate-900: #f8fafc;
+
+  --color-red-50: #2a0f12;
+  --color-red-100: #3d1518;
+  --color-red-200: #7f1d1d;
+  --color-red-300: #991b1b;
+  --color-red-800: #fca5a5;
+  --color-red-900: #fecaca;
+  --color-amber-50: #2a1d07;
+  --color-amber-100: #3b2a0c;
+  --color-amber-900: #fef3c7;
+  --color-emerald-50: #0b2a1e;
+  --color-emerald-100: #113a2a;
+  --color-emerald-200: #1c5a40;
+  --color-emerald-700: #6ee7b7;
+  --color-emerald-800: #a7f3d0;
+  --color-emerald-900: #d1fae5;
+  --color-sky-100: #0c2d44;
+  --color-sky-900: #bae6fd;
+  --color-teal-100: #0f3a37;
+  --color-teal-900: #ccfbf1;
+  --color-orange-100: #3b220c;
+  --color-orange-900: #fed7aa;
+  --color-orange-800: #fdba74;
+  --color-orange-700: #fb923c;
+}
+
+html.dark body { color-scheme: dark; }
+
+/* Brand text colours are too dark on the dark surface; swap to the light teal. */
+html.dark .text-primary-dark,
+html.dark .text-primary { color: var(--color-primary-text); }
 
 h1, h2, h3, .font-display { font-family: var(--font-display); }
 

@@ -138,7 +138,7 @@ export default function Pharmacy() {
                   const remaining = item.quantity - item.dispensed_qty;
                   const short = med ? med.stock_qty < remaining : false;
                   return (
-                    <div key={item.id} className={`flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 ${short ? 'border-red-300 bg-red-50' : 'border-line bg-white'}`}>
+                    <div key={item.id} className={`flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 ${short ? 'border-red-300 bg-red-50' : 'border-line bg-surface'}`}>
                       <div>
                         <p className="font-medium text-navy">{item.medicine_name}</p>
                         <p className="text-sm text-slate-500">{item.dosage}, {item.frequency} · remaining {remaining} of {item.quantity}</p>

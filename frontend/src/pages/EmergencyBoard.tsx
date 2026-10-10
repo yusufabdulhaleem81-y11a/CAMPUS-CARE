@@ -55,7 +55,7 @@ export default function EmergencyBoard() {
       <div className="mb-4 flex gap-2">
         {['active', 'closed', 'all'].map((f) => (
           <button key={f} onClick={() => setShowFilter(f)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium capitalize ${showFilter === f ? 'bg-primary text-white' : 'border border-line bg-white text-slate-600'}`}>
+            className={`rounded-full px-4 py-1.5 text-sm font-medium capitalize ${showFilter === f ? 'bg-primary text-white' : 'border border-line bg-surface text-slate-600'}`}>
             {f}
           </button>
         ))}

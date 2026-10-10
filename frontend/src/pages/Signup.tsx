@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Card, ErrorMsg, Field, Input, SuccessMsg } from '../components/ui';
 import { ClinicLogo } from '../components/ClinicLogo';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { api } from '../lib/api';
 import { getToken, setSession } from '../lib/api';
 
@@ -65,10 +66,11 @@ export default function Signup() {
       <div className="w-full max-w-md">
         <div className="mb-6 flex items-center justify-center gap-3">
           <ClinicLogo size={44} />
-          <div>
+          <div className="min-w-0 flex-1">
             <h1 className="font-display text-xl font-bold text-navy">Student registration</h1>
             <p className="text-sm text-slate-500">FUD Clinic · Create your account</p>
           </div>
+          <ThemeToggle />
         </div>
         <Card>
           <form onSubmit={submit} className="flex flex-col gap-4">

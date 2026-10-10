@@ -125,7 +125,7 @@ export default function PatientFiles() {
               ]} />
 
               {tab === 'timeline' && (
-                file === null || timeline.length === 0 && file!.encounters.length === 0 ? <Empty title="No history yet for this patient." /> : (
+                timeline.length === 0 && file!.encounters.length === 0 ? <Empty title="No history yet for this patient." /> : (
                   <ol className="relative ml-3 border-l-2 border-line">
                     {timeline.map((ev, i) => (
                       <li key={i} className="mb-4 ml-4">

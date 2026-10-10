@@ -82,6 +82,9 @@ export default function Lab() {
                 <Button size="sm" onClick={() => act(`${o.id}/release`)}>Release</Button>
               </div>
             )}
+            {phase === 'released' && o.status === 'verified' && isLabStaff && (
+              <Button size="sm" onClick={() => act(`${o.id}/release`)}>Release</Button>
+            )}
           </div>
         </div>
       </Card>

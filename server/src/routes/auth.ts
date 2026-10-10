@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { admin, anon } from '../supabase.js';
 import { authRequired, fail, roleRequired, type StaffProfile } from '../middleware.js';
+import { classifySignInError } from '../lib/signInError.js';
 
 export const authRouter = Router();
 
@@ -44,7 +45,9 @@ authRouter.post('/login', async (req, res) => {
       password: body.password,
     });
     if (signInError || !data.session) {
-      return res.status(401).json({ error: 'Wrong ID or password' });
+      const failure = classifySignInError(signInError);
+      console.warn(`[auth/login] sign-in failed: ${failure.logReason}`);
+      return res.status(failure.status).json({ error: failure.message });
     }
     const safeProfile: Partial<StaffProfile> = profile;
     res.json({

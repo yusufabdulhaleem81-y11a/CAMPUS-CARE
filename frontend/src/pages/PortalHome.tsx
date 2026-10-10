@@ -64,7 +64,7 @@ export default function PortalHome() {
           ['/portal/results', 'Test results'],
           ['/portal/more', 'Profile & notifications'],
         ].map(([to, label]) => (
-          <Link key={to} to={to} className="rounded-xl border border-line bg-white p-4 font-medium text-navy shadow-sm hover:border-primary">
+          <Link key={to} to={to} className="rounded-xl border border-line bg-surface p-4 font-medium text-navy shadow-sm hover:border-primary">
             {label}
           </Link>
         ))}

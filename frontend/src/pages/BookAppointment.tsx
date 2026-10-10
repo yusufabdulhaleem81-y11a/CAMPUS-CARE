@@ -90,7 +90,7 @@ export default function BookAppointment() {
           <div className="flex flex-wrap gap-2">
             {['General consultation', 'Follow-up visit', 'Laboratory test request', 'Antenatal check'].map((s) => (
               <button key={s} onClick={() => setService(s)} type="button"
-                className={`rounded-full px-4 py-2 text-sm font-medium ${service === s ? 'bg-primary text-white' : 'border border-line bg-white text-slate-700 hover:border-primary'}`}>
+                className={`rounded-full px-4 py-2 text-sm font-medium ${service === s ? 'bg-primary text-white' : 'border border-line bg-surface text-slate-700 hover:border-primary'}`}>
                 {s}
               </button>
             ))}
@@ -103,7 +103,7 @@ export default function BookAppointment() {
             {doctors.length === 0 && <p className="text-sm text-slate-500">No doctors accepting appointments right now.</p>}
             {doctors.map((d) => (
               <button key={d.profile_id} type="button" onClick={() => setDoctorId(d.profile_id)}
-                className={`flex items-center justify-between rounded-lg border px-4 py-3 text-left ${doctorId === d.profile_id ? 'border-primary bg-primary-light/40' : 'border-line bg-white hover:border-primary'}`}>
+                className={`flex items-center justify-between rounded-lg border px-4 py-3 text-left ${doctorId === d.profile_id ? 'border-primary bg-primary-light/40' : 'border-line bg-surface hover:border-primary'}`}>
                 <span className="font-medium text-navy">{d.profiles?.full_name}</span>
                 <span className="text-sm text-slate-500">{d.specialty}</span>
               </button>
@@ -116,7 +116,7 @@ export default function BookAppointment() {
           <div className="flex gap-2 overflow-x-auto pb-1">
             {nextDays(10).map((d) => (
               <button key={d.date} type="button" onClick={() => setDate(d.date)}
-                className={`shrink-0 rounded-lg border px-3 py-2 text-center text-sm ${date === d.date ? 'border-primary bg-primary text-white' : 'border-line bg-white'}`}>
+                className={`shrink-0 rounded-lg border px-3 py-2 text-center text-sm ${date === d.date ? 'border-primary bg-primary text-white' : 'border-line bg-surface'}`}>
                 <span className="block text-xs opacity-80">{d.dow}</span>
                 <span className="font-semibold">{d.label}</span>
               </button>
@@ -135,7 +135,7 @@ export default function BookAppointment() {
                   <button key={s.time} type="button" disabled={!s.available}
                     onClick={() => setChosen(s.time)}
                     className={`rounded-lg border px-2 py-2 text-sm font-medium ${!s.available ? 'cursor-not-allowed border-line bg-slate-100 text-slate-400 line-through'
-                      : chosen === s.time ? 'border-primary bg-primary text-white' : 'border-line bg-white hover:border-primary'}`}>
+                      : chosen === s.time ? 'border-primary bg-primary text-white' : 'border-line bg-surface hover:border-primary'}`}>
                     {s.time}
                   </button>
                 ))}

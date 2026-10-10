@@ -54,7 +54,7 @@ export function Field({ label, children, hint, required }: { label: string; chil
   return (
     <label className="block">
       <span className="mb-1 block text-sm font-medium text-slate-700">
-        {label}{required && <span className="text-red-700"> *</span>}
+        {label}{required && <span className="text-red-800"> *</span>}
       </span>
       {children}
       {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
@@ -63,7 +63,7 @@ export function Field({ label, children, hint, required }: { label: string; chil
 }
 
 export const inputClass =
-  'w-full rounded-[6px] border border-line bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-primary';
+  'w-full rounded-[6px] border border-line bg-surface px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-primary';
 
 export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={`${inputClass} ${props.className ?? ''}`} />;
@@ -160,7 +160,7 @@ export function Modal({ open, onClose, title, children }: { open: boolean; onClo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-5 shadow-xl">
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-surface p-5 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="font-display text-lg font-semibold text-navy">{title}</h3>
           <button onClick={onClose} aria-label="Close" className="rounded p-1 text-slate-500 hover:bg-slate-100">✕</button>

@@ -75,7 +75,7 @@ export default function Queue() {
               <Card key={row.id} className={isEmergency ? 'border-red-300 bg-red-50/60' : ''}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex min-w-0 items-start gap-4">
-                    <div className={`flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl font-display font-bold ${isEmergency ? 'bg-red-700 text-white' : 'bg-navy text-white'}`}>
+                    <div className={`flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl font-display font-bold ${isEmergency ? 'bg-red-700 text-white' : 'bg-sidebar text-white'}`}>
                       <span className="text-lg leading-none">{row.queue_number}</span>
                       <span className="text-[10px] uppercase opacity-80">queue</span>
                     </div>
