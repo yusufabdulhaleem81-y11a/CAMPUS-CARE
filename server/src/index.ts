@@ -18,7 +18,7 @@ app.use('/api/auth', authRouter);
 app.use('/api', clinicRouter);
 app.use('/api', pharmacyRouter);
 app.use('/api', operationsRouter);
-app.use('/api', analyticsRouter);
+app.use('/api/analytics', analyticsRouter);
 app.use('/api/admin', adminRouter);
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));

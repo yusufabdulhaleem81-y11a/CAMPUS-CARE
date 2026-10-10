@@ -16,7 +16,7 @@ operationsRouter.get('/shifts', async (req, res) => {
     const fromDate = String(req.query.from ?? new Date().toISOString().slice(0, 10));
     const toDate = String(req.query.to ?? fromDate);
     const { data, error } = await from(req, 'shifts')
-      .select('*, profiles(full_name, role, staff_id)')
+      .select('*, profiles:profiles!shifts_staff_id_fkey(full_name, role, staff_id)')
       .gte('shift_date', fromDate).lte('shift_date', toDate)
       .order('starts_at');
     if (error) throw error;
@@ -50,7 +50,7 @@ operationsRouter.post('/shifts', MGMT, async (req, res) => {
 operationsRouter.get('/on-duty', STAFF_ROLES, async (req, res) => {
   try {
     const { data, error } = await from(req, 'shifts')
-      .select('*, profiles(full_name, role, staff_id)')
+      .select('*, profiles:profiles!shifts_staff_id_fkey(full_name, role, staff_id)')
       .lte('starts_at', new Date().toISOString())
       .gte('ends_at', new Date().toISOString());
     if (error) throw error;
@@ -91,7 +91,7 @@ operationsRouter.get('/attendance', MGMT, async (req, res) => {
 
 operationsRouter.get('/handovers', STAFF_ROLES, async (req, res) => {
   const { data, error } = await from(req, 'handovers')
-    .select('*, profiles(full_name)')
+    .select('*, profiles:profiles!handovers_from_staff_id_fkey(full_name)')
     .order('created_at', { ascending: false }).limit(50);
   if (error) return fail(res, error, 500);
   res.json(data);
@@ -156,9 +156,10 @@ async function notifyEmergencyDesk(c: { priority: string; case_number: string })
 operationsRouter.get('/emergency', STAFF_ROLES, async (req, res) => {
   const status = req.query.status as string | undefined;
   let query = from(req, 'emergency_cases')
-    .select('*, patients(unit_number, full_name), profiles!emergency_cases_assigned_to_fkey(full_name), profiles!emergency_cases_handed_over_to_fkey(full_name)')
+    .select('*, patients(unit_number, full_name), assigned:profiles!emergency_cases_assigned_to_fkey(full_name), handed:profiles!emergency_cases_handed_over_to_fkey(full_name), profiles:profiles!emergency_cases_created_by_fkey(full_name)')
     .order('created_at', { ascending: false }).limit(100);
-  if (status) query = query.eq('status', status);
+  if (status === 'active') query = query.in('status', ['open', 'responding', 'handed_over']);
+  else if (status) query = query.eq('status', status);
   const { data, error } = await query;
   if (error) return fail(res, error, 500);
   res.json(data);

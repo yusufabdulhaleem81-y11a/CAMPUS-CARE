@@ -108,7 +108,7 @@ pharmacyRouter.post('/alerts/:id/acknowledge', PHARM, async (req, res) => {
 
 pharmacyRouter.get('/purchase-requests', async (req, res) => {
   const { data, error } = await from(req, 'purchase_requests')
-    .select('*, purchase_request_items(*, medicines(name, unit), suppliers(name)), profiles(full_name)')
+    .select('*, purchase_request_items(*, medicines(name, unit), suppliers(name)), profiles:profiles!purchase_requests_created_by_fkey(full_name)')
     .order('created_at', { ascending: false });
   if (error) return fail(res, error, 500);
   res.json(data);
