@@ -132,7 +132,7 @@ export default function Landing() {
       </header>
 
       {/* ---------- Hero ---------- */}
-      <section id="home" className="relative flex h-screen items-center overflow-hidden">
+      <section id="home" className="relative flex h-[80vh] min-h-[500px] items-center overflow-hidden">
         <HeroSlideshow />
 
         <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 pb-24 pt-28 sm:px-6 lg:px-8 lg:pb-28 lg:pt-32">
