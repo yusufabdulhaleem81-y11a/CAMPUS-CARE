@@ -2,65 +2,67 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 export interface HeroSlide {
   image: string;
-  /** Used for the dot's accessible label and the caption. */
   title: string;
-  /** Optional attribution line, shown over the hero while the photo is visible. */
+  locationLabel: string;
   credit?: string;
 }
 
-/** The five campus photographs. Sources and licences are recorded in
- *  `public/images/CREDITS.md` — keep the two in step when adding a photo. */
+/** Real FUD campus photographs present in `frontend/public/images/`.
+ *  Filenames are taken from the working directory — keep in sync when adding/removing photos.
+ *  Spaces in jfif names are kept verbatim; CSS url() is quoted so they resolve correctly. */
 export const heroSlides: HeroSlide[] = [
   {
     image: '/images/046-fud-gate.jpg',
     title: 'The main gate of Federal University Dutse',
-    credit: 'Photo: Gwanki, Wikimedia Commons (CC BY-SA 4.0)',
+    locationLabel: 'FUD Main Gate – Gwanki Campus',
+    credit: 'Federal University Dutse',
   },
   {
-    image: '/images/047-fud-college-of-health-sciences.jpg',
-    title: 'College of Health Sciences, Federal University Dutse',
-    credit: 'Photo: Abdoul Mzee, Wikimedia Commons (CC BY-SA 3.0)',
+    image: '/images/image.png',
+    title: 'Federal University Dutse campus view',
+    locationLabel: 'FUD Campus – Dutse, Jigawa State',
   },
   {
-    image: '/images/048-fud-campus.jpg',
+    image: '/images/images.jpg',
     title: 'Federal University Dutse campus',
-    credit: 'Photo: Abdoul Mzee, Wikimedia Commons (CC BY-SA 3.0)',
+    locationLabel: 'FUD Campus – Dutse',
   },
   {
-    image: '/images/049-fud-graduation.jpg',
-    title: 'Graduation day at Federal University Dutse',
-    credit: 'Photo: Abdoul Mzee, Wikimedia Commons (CC BY-SA 3.0)',
+    image: '/images/images.jfif',
+    title: 'Federal University Dutse academic area',
+    locationLabel: 'Academic Block – FUD Campus',
   },
   {
-    image: '/images/050-fud-graduation-atrium.jpg',
-    title: 'Students of Federal University Dutse',
-    credit: 'Photo: Abdoul Mzee, Wikimedia Commons (CC BY-SA 3.0)',
+    image: '/images/images (1).jfif',
+    title: 'Federal University Dutse facilities',
+    locationLabel: 'FUD Facilities – Gwanki Campus',
+  },
+  {
+    image: '/images/images (2).jfif',
+    title: 'Federal University Dutse lecture area',
+    locationLabel: 'Lecture Complex – FUD',
+  },
+  {
+    image: '/images/images (3).jfif',
+    title: 'Federal University Dutse student area',
+    locationLabel: 'Student Area – FUD Campus',
+  },
+  {
+    image: '/images/images (4).jfif',
+    title: 'Federal University Dutse grounds',
+    locationLabel: 'University Grounds – FUD',
   },
 ];
 
-/** Bundled artwork that ships with the app. If a photograph is missing or fails to
- *  load, the slide falls back to one of these so the hero is never left blank. */
-const fallbackSlides: HeroSlide[] = [
-  { image: '/images/slide-campus.svg', title: 'Federal University Dutse campus' },
-  { image: '/images/slide-care.svg', title: 'Quality care for the university community' },
-  { image: '/images/slide-students.svg', title: 'Serving students, staff and the community' },
-  { image: '/images/slide-health.svg', title: 'Modern clinic services on campus' },
-];
+const ROTATE_MS = 5500;
 
-const ROTATE_MS = 6000;
-
-/** Automatic, crossfading, full-bleed background slideshow with clickable
- *  progress dots. Timers are cleaned up; CSS honours prefers-reduced-motion.
- *  Any slide whose image fails to load is swapped for bundled artwork. */
 export function HeroSlideshow({ slides = heroSlides }: { slides?: HeroSlide[] }) {
   const [active, setActive] = useState(0);
   const [failed, setFailed] = useState<Record<string, true>>({});
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Memoised so the array identity is stable across renders (only the URLs matter).
-  const list = useMemo(() => (slides.length > 0 ? slides : fallbackSlides), [slides]);
+  const list = useMemo(() => (slides.length > 0 ? slides : heroSlides), [slides]);
 
-  // Probe every image once up front; whichever fail are replaced by fallback artwork.
   useEffect(() => {
     let cancelled = false;
     const probes = list.map((slide) => {
@@ -73,80 +75,114 @@ export function HeroSlideshow({ slides = heroSlides }: { slides?: HeroSlide[] })
     });
     return () => {
       cancelled = true;
-      probes.forEach((img) => {
-        img.onerror = null; // stop a late error from a stale probe updating state
-      });
+      probes.forEach((img) => { img.onerror = null; });
     };
-    }, [list]);
+  }, [list]);
 
   useEffect(() => {
-    timer.current = setInterval(() => {
-      setActive((i) => (i + 1) % list.length);
-    }, ROTATE_MS);
+    timer.current = setInterval(() => setActive((i) => (i + 1) % list.length), ROTATE_MS);
     return () => {
       if (timer.current) clearInterval(timer.current);
       timer.current = null;
     };
   }, [list]);
 
+  function restartInterval() {
+    if (timer.current) clearInterval(timer.current);
+    timer.current = setInterval(() => setActive((prev) => (prev + 1) % list.length), ROTATE_MS);
+  }
+
   function goTo(i: number) {
     setActive(i);
-    // Restart the rotation so the chosen slide gets a full interval.
-    if (timer.current) clearInterval(timer.current);
-    timer.current = setInterval(() => {
-      setActive((prev) => (prev + 1) % list.length);
-    }, ROTATE_MS);
+    restartInterval();
   }
 
-  /** Photograph for slide `i`, or bundled artwork when it could not be loaded. */
-  function sourceFor(i: number) {
-    const slide = list[i];
-    if (!failed[slide.image]) return slide;
-    return fallbackSlides[i % fallbackSlides.length];
+  function prev() {
+    setActive((i) => (i - 1 + list.length) % list.length);
+    restartInterval();
   }
 
-  const activeSlide = sourceFor(active);
+  function next() {
+    setActive((i) => (i + 1) % list.length);
+    restartInterval();
+  }
+
+  const activeSlide = list[active];
 
   return (
     <>
+      {/* Background layers */}
       <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
-        {/* Last-resort backdrop, in case even the bundled artwork is unavailable */}
-        <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy/90 to-sidebar" />
-        {list.map((slide, i) => (
-          <div
-            key={slide.image}
-            className={`hero-slide ${i === active ? 'active' : ''}`}
-            style={{ backgroundImage: `url(${sourceFor(i).image})` }}
-          />
-        ))}
-        {/* Legibility overlay for text and controls */}
-        <div className="absolute inset-0 bg-gradient-to-r from-navy/80 via-navy/45 to-transparent" />
-        {/* Soft fade into the page background at the bottom edge */}
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-bg/90 to-transparent" />
+        <div className="absolute inset-0 bg-[#0a1a33]" />
+        {list.map((slide, i) => {
+          if (failed[slide.image]) return null;
+          return (
+            <div
+              key={slide.image}
+              className={`hero-slide ${i === active ? 'active' : ''}`}
+              style={{ backgroundImage: `url("${slide.image}")` }}
+            />
+          );
+        })}
+        {/* Balanced dark gradient: strongest on left behind text, fading to the right */}
+        <div className="hero-overlay" />
+        {/* Extra top scrim so white header text stays legible over bright skies */}
+        <div className="hero-top-scrim" />
       </div>
 
-      {/* Slide indicators — decorative backgrounds stay aria-hidden, dots are interactive */}
-      <nav aria-label="Hero slides" className="absolute bottom-6 left-4 z-10 flex gap-2 sm:left-8">
+      {/* Left / Right arrows */}
+      <button
+        type="button"
+        onClick={prev}
+        aria-label="Previous slide"
+        className="hero-arrow hero-arrow-left"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        onClick={next}
+        aria-label="Next slide"
+        className="hero-arrow hero-arrow-right"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {/* Dots */}
+      <nav aria-label="Hero slides" className="hero-dots">
         {list.map((slide, i) => (
           <button
             key={slide.image}
             type="button"
             onClick={() => goTo(i)}
-            aria-label={`Show slide ${i + 1}: ${sourceFor(i).title}`}
+            aria-label={`Show slide ${i + 1}: ${slide.title}`}
             aria-current={i === active}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === active ? 'w-7 bg-primary-light' : 'w-3 bg-white/40 hover:bg-white/70'
-            }`}
+            className={`hero-dot ${i === active ? 'hero-dot-active' : ''}`}
           />
         ))}
       </nav>
 
-      {/* Attribution for the photo currently on screen (CC BY-SA requires credit) */}
-      {activeSlide.credit && (
-        <p className="absolute bottom-7 right-4 z-10 hidden text-[11px] text-white/60 sm:right-8 sm:block">
-          {activeSlide.credit}
-        </p>
-      )}
+      {/* Location caption – lower left */}
+      <div className="hero-location">
+        <span className="hero-location-dot" aria-hidden="true" />
+        <span>{activeSlide.locationLabel}</span>
+      </div>
+
+      {/* Campus badge – lower right */}
+      <div className="hero-badge">
+        <div className="hero-badge-title">Federal University Dutse</div>
+        <div className="hero-badge-motto">Knowledge, Excellence and Service</div>
+      </div>
+
+      {/* Curved white bottom edge + thin green accent */}
+      <div className="hero-curve-wrap" aria-hidden="true">
+        <div className="hero-curve-line" />
+        <div className="hero-curve" />
+      </div>
     </>
   );
 }

@@ -19,28 +19,18 @@ const services = [
   { name: 'Health records', desc: 'Your whole clinic history in one digital file, secured and private.' },
 ];
 
-/** Reveals children with a slide-up once they scroll into view.
- *  Motion is CSS-driven; the global prefers-reduced-motion rule disables it. */
 function Reveal({ children, delay = 0, className = '' }: { children: ReactNode; delay?: number; className?: string }) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [shown, setShown] = useState(false);
-
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShown(true);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.15 },
-    );
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setShown(true); io.disconnect(); }
+    }, { threshold: 0.15 });
     io.observe(el);
     return () => io.disconnect();
   }, []);
-
   return (
     <div ref={ref} className={`reveal ${shown ? 'revealed' : ''} ${className}`} style={{ transitionDelay: `${delay}ms` }}>
       {children}
@@ -48,105 +38,159 @@ function Reveal({ children, delay = 0, className = '' }: { children: ReactNode; 
   );
 }
 
+const navLinks = [
+  { label: 'Home', href: '#home' },
+  { label: 'About', href: '#about' },
+  { label: 'Services', href: '#services' },
+  { label: 'How It Works', href: '#how-it-works' },
+  { label: 'Contact', href: '#contact' },
+];
+
 export default function Landing() {
   const { profile } = useAuth();
   const [info, setInfo] = useState<ClinicInfo | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     api<ClinicInfo>('/public/clinic-info').then(setInfo).catch(() => setInfo(null));
   }, []);
 
+  const bookHref = profile ? homeForRole[profile.role] : '/login';
+
   return (
     <div className="min-h-screen">
-      {/* ---------- Nav ---------- */}
-      <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 py-4 sm:px-8">
-        <LogoLockup light />
-        <nav className="flex items-center gap-3">
-          <ThemeToggle onNavy />
-          {profile ? (
-            <Link to={homeForRole[profile.role]}
-              className="rounded-[10px] bg-primary px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary/30 transition hover:-translate-y-0.5 hover:bg-primary-dark">
-              Open my dashboard
-            </Link>
-          ) : (
-            <>
-              <Link to="/login"
-                className="rounded-[10px] border border-white/40 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10">
-                Login
-              </Link>
-              <Link to="/signup"
-                className="rounded-[10px] bg-primary px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary/30 transition hover:-translate-y-0.5 hover:bg-primary-dark">
-                Register
-              </Link>
-            </>
-          )}
-        </nav>
-      </header>
+      {/* ---------- Header ---------- */}
+      <header className="absolute inset-x-0 top-0 z-20">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <Link to="/" className="shrink-0">
+            <LogoLockup light />
+          </Link>
 
-      {/* ---------- Hero with automated slideshow ---------- */}
-      <section className="relative flex min-h-[92vh] items-center overflow-hidden">
-        <HeroSlideshow />
+          <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary">
+            {navLinks.map((l) => (
+              <a
+                key={l.label}
+                href={l.href}
+                className="text-sm font-medium text-white/90 transition hover:text-white"
+              >
+                {l.label}
+              </a>
+            ))}
+          </nav>
 
-        {/* Decorative gradient orbs — pure ambience, never intercept input */}
-        <div aria-hidden="true" className="pointer-events-none absolute -right-24 top-16 h-72 w-72 rounded-full bg-primary/25 blur-3xl float-slow" />
-        <div aria-hidden="true" className="pointer-events-none absolute -left-20 bottom-24 h-64 w-64 rounded-full bg-gold/15 blur-3xl" />
-
-        <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-28 sm:px-8">
-          <p className="hero-enter mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white backdrop-blur"
-            style={{ animationDelay: '80ms' }}>
-            <span className="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-primary-light" aria-hidden="true" />
-            Federal University Dutse
-          </p>
-          <h1 className="hero-enter max-w-2xl font-display text-4xl font-bold leading-tight text-white drop-shadow-sm sm:text-5xl"
-            style={{ animationDelay: '180ms' }}>
-            FUD <span className="text-gradient">Campus Care</span>
-          </h1>
-          <p className="hero-enter mt-4 max-w-xl text-lg text-navy-light" style={{ animationDelay: '280ms' }}>
-            Digital healthcare for Federal University Dutse. Book appointments, avoid the long queue,
-            and keep your whole clinic history in one secure file.
-          </p>
-          <div className="hero-enter mt-8 flex flex-wrap gap-3" style={{ animationDelay: '380ms' }}>
+          <div className="flex items-center gap-2.5">
+            <ThemeToggle onNavy />
             {profile ? (
-              <Link to={homeForRole[profile.role]}
-                className="rounded-[10px] bg-primary px-6 py-3 font-semibold text-white shadow-xl shadow-primary/30 transition hover:-translate-y-0.5 hover:bg-primary-dark">
-                Go to my dashboard
+              <Link
+                to={homeForRole[profile.role]}
+                className="hidden rounded-full bg-[#0e9b8a] px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#0a8a7a] sm:inline-flex"
+              >
+                Open my dashboard
               </Link>
             ) : (
-              <>
-                <Link to="/login"
-                  className="rounded-[10px] bg-primary px-6 py-3 font-semibold text-white shadow-xl shadow-primary/30 transition hover:-translate-y-0.5 hover:bg-primary-dark">
-                  Login to the clinic
-                </Link>
-                <Link to="/signup"
-                  className="rounded-[10px] border border-white/50 px-6 py-3 font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/10">
-                  Register as a student
-                </Link>
-              </>
+              <Link
+                to="/login"
+                className="rounded-full border border-white/35 bg-white/10 px-5 py-2 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15"
+              >
+                Login
+              </Link>
             )}
-            <a href={`tel:${info?.emergency_phone ?? ''}`}
-              className="rounded-[10px] bg-red-700 px-6 py-3 font-semibold text-white shadow-lg shadow-red-900/30 transition hover:-translate-y-0.5 hover:bg-red-800">
-              Emergency: {info?.emergency_phone || 'call the clinic'}
-            </a>
+            <button
+              type="button"
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen((v) => !v)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/25 text-white lg:hidden"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                {mobileOpen ? (
+                  <path d="M6 6l12 12M6 18L18 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                ) : (
+                  <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                )}
+              </svg>
+            </button>
           </div>
-          <p className="hero-enter mt-6 inline-flex items-center gap-2 rounded-full bg-navy/40 px-3 py-1 text-sm text-navy-light backdrop-blur"
-            style={{ animationDelay: '480ms' }}>
-            <span className="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
-            Clinic hours: {info ? `${info.opening_time.slice(0, 5)} – ${info.closing_time.slice(0, 5)}` : 'Mon – Fri, 8:00 – 17:00'}
-          </p>
         </div>
 
-        {/* Scroll cue */}
-        <a href="#how-it-works" aria-label="Scroll to how Campus Care works"
-          className="absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-1 text-navy-light transition hover:text-white sm:flex">
-          <span className="text-[11px] font-medium uppercase tracking-widest">Discover</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="animate-bounce">
-            <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </a>
+        {mobileOpen && (
+          <div className="mx-4 rounded-2xl border border-white/15 bg-navy/85 px-4 py-4 backdrop-blur lg:hidden">
+            <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
+              {navLinks.map((l) => (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white"
+                >
+                  {l.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        )}
+      </header>
+
+      {/* ---------- Hero ---------- */}
+      <section id="home" className="relative flex min-h-[92vh] items-center overflow-hidden">
+        <HeroSlideshow />
+
+        <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 pb-24 pt-28 sm:px-6 lg:px-8 lg:pb-28 lg:pt-32">
+          <div className="max-w-[640px]">
+            <p
+              className="hero-enter text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70"
+              style={{ animationDelay: '80ms' }}
+            >
+              Quality healthcare, closer to you
+            </p>
+            <h1
+              className="hero-enter mt-3 font-display text-4xl font-extrabold leading-[0.95] tracking-tight sm:text-5xl lg:text-[58px]"
+              style={{ animationDelay: '160ms' }}
+            >
+              <span className="text-white">FUD</span>{' '}
+              <span className="text-[#7af0d6]">Campus Care</span>
+            </h1>
+            <p
+              className="hero-enter mt-5 max-w-[520px] text-base leading-relaxed text-white/85 sm:text-[17px]"
+              style={{ animationDelay: '260ms' }}
+            >
+              Fast, secure and convenient clinic services for Federal University Dutse students and staff.
+            </p>
+            <div className="hero-enter mt-8 flex flex-wrap gap-3" style={{ animationDelay: '360ms' }}>
+              <Link
+                to={bookHref}
+                className="inline-flex items-center justify-center rounded-full bg-[#10b981] px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-900/25 transition hover:-translate-y-0.5 hover:bg-[#0ea371]"
+              >
+                Book Appointment
+              </Link>
+              <a
+                href="#about"
+                className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white/5 px-7 py-3 text-sm font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/10"
+              >
+                Learn More
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- About ---------- */}
+      <section id="about" className="mx-auto max-w-6xl scroll-mt-8 px-4 py-14 sm:px-8">
+        <Reveal>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">About Campus Care</p>
+          <h2 className="mt-2 font-display text-2xl font-semibold leading-tight text-navy">
+            Healthcare built for the FUD community
+          </h2>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            FUD Campus Care brings the university clinic online — appointments, queue management, lab results,
+            pharmacy and emergency response — so students and staff spend less time waiting and more time cared for.
+            Your clinic file stays secure, private and always at hand.
+          </p>
+        </Reveal>
       </section>
 
       {/* ---------- How it works ---------- */}
-      <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-6 px-4 py-16 sm:px-8">
+      <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-6 px-4 py-10 sm:px-8">
         <Reveal>
           <h2 className="font-display text-2xl font-semibold text-navy">How Campus Care works</h2>
         </Reveal>
@@ -167,7 +211,7 @@ export default function Landing() {
       </section>
 
       {/* ---------- Services ---------- */}
-      <section className="bg-gradient-to-b from-surface to-bg py-16">
+      <section id="services" className="bg-gradient-to-b from-surface to-bg py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
           <Reveal>
             <h2 className="font-display text-2xl font-semibold text-navy">Clinic services</h2>
@@ -185,7 +229,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ---------- Trust ---------- */}
+      {/* ---------- Trust / Emergency ---------- */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-8">
         <div className="grid gap-6 lg:grid-cols-2">
           <Reveal>
@@ -200,7 +244,7 @@ export default function Landing() {
             <div className="h-full rounded-xl border border-red-200 bg-red-50 p-6 transition duration-300 hover:shadow-lg">
               <h3 className="font-display text-lg font-semibold text-red-900">Emergency?</h3>
               <p className="mt-2 text-sm text-red-800">
-                Don't book an appointment. Call the clinic emergency line or send an emergency request now —
+                Don&apos;t book an appointment. Call the clinic emergency line or send an emergency request now —
                 available even without an account.
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
@@ -217,7 +261,7 @@ export default function Landing() {
       </section>
 
       {/* ---------- Footer ---------- */}
-      <footer className="bg-sidebar py-10 text-navy-light">
+      <footer id="contact" className="bg-sidebar py-10 text-navy-light">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <LogoLockup light />
           <p className="text-sm">

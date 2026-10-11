@@ -43,11 +43,11 @@ export function LogoLockup({ light = false }: { light?: boolean }) {
     <span className="flex items-center gap-2.5">
       <ClinicLogo size={34} />
       <span className="leading-tight">
-        <span className={`block font-display text-[17px] font-bold ${light ? 'text-white' : 'text-navy'}`}>
-          Campus Care
+        <span className={`block font-display text-[15px] font-bold tracking-tight ${light ? 'text-white' : 'text-navy'}`}>
+          FUD Campus Care
         </span>
-        <span className={`block text-[11px] font-medium tracking-wide ${light ? 'text-navy-light' : 'text-slate-500'}`}>
-          FUD CLINIC
+        <span className={`block text-[10px] font-medium tracking-wide ${light ? 'text-white/70' : 'text-slate-500'}`}>
+          Federal University Dutse
         </span>
       </span>
     </span>

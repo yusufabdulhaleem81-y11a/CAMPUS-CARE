@@ -101,16 +101,164 @@ h1, h2, h3, .font-display { font-family: var(--font-display); }
   }
 }
 
-/* Hero slideshow crossfade */
+/* Hero slideshow crossfade — cover keeps aspect without distortion */
 .hero-slide {
   position: absolute;
   inset: 0;
   opacity: 0;
-  transition: opacity 1.6s ease-in-out;
+  transition: opacity 1.4s ease-in-out;
   background-size: cover;
-  background-position: center;
+  background-position: center 35%;
 }
 .hero-slide.active { opacity: 1; }
+
+/* Balanced dark gradient: darkest behind text on left, fading right so campus stays visible */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(8, 22, 48, 0.82) 0%,
+    rgba(10, 28, 58, 0.72) 32%,
+    rgba(14, 36, 68, 0.42) 56%,
+    rgba(14, 36, 68, 0.16) 76%,
+    rgba(14, 36, 68, 0.06) 100%
+  );
+}
+.hero-top-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(8, 22, 48, 0.58) 0%, rgba(8, 22, 48, 0.18) 22%, transparent 42%);
+  pointer-events: none;
+}
+
+/* Arrows */
+.hero-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 10;
+  display: inline-flex;
+  height: 42px;
+  width: 42px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s, transform 0.2s;
+}
+.hero-arrow:hover { background: rgba(255,255,255,0.18); transform: translateY(-50%) scale(1.04); }
+.hero-arrow-left { left: 14px; transform: translateY(-50%); }
+.hero-arrow-right { right: 14px; transform: translateY(-50%); }
+@media (min-width: 640px) {
+  .hero-arrow-left { left: 18px; }
+  .hero-arrow-right { right: 18px; }
+}
+
+/* Dots — centred at bottom */
+.hero-dots {
+  position: absolute;
+  bottom: 34px;
+  left: 50%;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  transform: translateX(-50%);
+}
+.hero-dot {
+  height: 7px;
+  width: 7px;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.42);
+  transition: all 0.3s;
+}
+.hero-dot:hover { background: rgba(255,255,255,0.75); }
+.hero-dot-active { width: 22px; background: #2dd4bf; }
+
+/* Location caption — lower left */
+.hero-location {
+  position: absolute;
+  bottom: 30px;
+  left: 16px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.16);
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(255,255,255,0.9);
+  backdrop-filter: blur(8px);
+}
+.hero-location-dot {
+  height: 6px;
+  width: 6px;
+  border-radius: 9999px;
+  background: #2dd4bf;
+  box-shadow: 0 0 8px rgba(45,212,191,0.7);
+}
+@media (min-width: 640px) { .hero-location { left: 24px; font-size: 12px; } }
+
+/* Campus badge — lower right */
+.hero-badge {
+  position: absolute;
+  bottom: 30px;
+  right: 16px;
+  z-index: 10;
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.92);
+  padding: 10px 14px;
+  text-align: right;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+}
+.hero-badge-title { font-size: 12px; font-weight: 700; color: #1e3a5f; line-height: 1.1; }
+.hero-badge-motto { margin-top: 2px; font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: #0f766e; }
+@media (min-width: 768px) { .hero-badge { display: flex; } }
+@media (min-width: 640px) { .hero-badge { right: 24px; } }
+
+/* Curved white bottom edge + thin green accent */
+.hero-curve-wrap {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  pointer-events: none;
+  height: 36px;
+}
+.hero-curve-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: #10b981;
+}
+.hero-curve {
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  bottom: -18px;
+  height: 42px;
+  background: var(--color-bg);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+html.dark .hero-curve { background: var(--color-bg); }
+@media (max-width: 640px) {
+  .hero-curve { height: 28px; bottom: -12px; }
+  .hero-curve-wrap { height: 24px; }
+  .hero-dots { bottom: 22px; }
+  .hero-location, .hero-badge { bottom: 18px; }
+}
 
 /* ---------- Landing polish ---------- */
 /* Entrance for hero content; staggered with inline animation-delay. */
