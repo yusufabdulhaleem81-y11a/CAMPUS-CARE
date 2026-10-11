@@ -298,6 +298,24 @@ html.dark .hero-curve { background: var(--color-bg); }
   color: transparent;
 }
 
+/* Additional mobile-responsive tweaks for hero */
+@media (max-width: 380px) {
+  .hero-location { bottom: 14px; left: 12px; padding: 5px 10px; font-size: 10px; }
+  .hero-badge { bottom: 14px; right: 12px; padding: 8px 10px; }
+  .hero-badge-title { font-size: 11px; }
+  .hero-badge-motto { font-size: 9px; }
+  .hero-arrow { height: 36px; width: 36px; }
+  .hero-arrow-left { left: 10px; }
+  .hero-arrow-right { right: 10px; }
+}
+
+/* Safe area insets for notch phones */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .hero-location { bottom: calc(30px + env(safe-area-inset-bottom)); }
+  .hero-badge { bottom: calc(30px + env(safe-area-inset-bottom)); }
+  .hero-dots { bottom: calc(34px + env(safe-area-inset-bottom)); }
+}
+
 @media print {
   .no-print { display: none !important; }
 }
